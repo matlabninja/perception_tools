@@ -14,13 +14,17 @@ from collections import OrderedDict
 # besides resnet if you want. In the constructed class, inherit this first and backbone
 # second
 class AvgPoolFcClassifier(torch.nn.Module):
-    def __init__(self,num_classes: int,fc_features: int) -> None:
+    def __init__(self,num_classes: int,fc_features: int,
+                weights: Union[weightlib._api.WeightsEnum,OrderedDict]) -> None:
         super().__init__()
         # These are the actual layers that drop onto the end of a resnet network to
         # take a final feature map to class probabilities
         self.avgpool = torch.nn.AdaptiveAvgPool2d((1,1))
         self.fc = torch.nn.Linear(in_features=fc_features,out_features=num_classes)
-    def prep_and_load_weights(self, num_classes: int, weights: Union[weightlib._api.WeightsEnum,OrderedDict]) -> OrderedDict:
+        # Load weights if provided
+        if weights is not None:
+            self.prep_and_load_weights(num_classes,weights)
+    def prep_and_load_weights(self, num_classes: int, weights: Union[weightlib._api.WeightsEnum,OrderedDict]) -> None:
         # If we get weights in a weightlib class, extract the state dict
         if not isinstance(weights,OrderedDict):
             weights = weights.get_state_dict(progress=True)
@@ -49,10 +53,7 @@ class AvgPoolFcClassifier(torch.nn.Module):
 class Resnet18(AvgPoolFcClassifier,resnet.Resnet18Backbone):
     def __init__(self,num_classes: int=None,weights: Union[weightlib.ResNet18_Weights,dict]=None) -> None:
         # Initialize the network. This will initialize the classifier layers
-        super().__init__(num_classes,512)
-        # If weights are not none, load them
-        if weights is not None:
-            self.prep_and_load_weights(num_classes,weights)
+        super().__init__(num_classes,512,weights)
     def forward(self,x: torch.Tensor) -> torch.Tensor:
         return super().forward(x)
     
@@ -60,10 +61,7 @@ class Resnet18(AvgPoolFcClassifier,resnet.Resnet18Backbone):
 class Resnet34(AvgPoolFcClassifier,resnet.Resnet34Backbone):
     def __init__(self,num_classes: int=None,weights: Union[weightlib.ResNet34_Weights,dict]=None) -> None:
         # Initialize the network. This will initialize the classifier layers
-        super().__init__(num_classes,512)
-        # If weights are not none, load them
-        if weights is not None:
-            self.prep_and_load_weights(num_classes,weights)
+        super().__init__(num_classes,512,weights)
     def forward(self,x: torch.Tensor) -> torch.Tensor:
         return super().forward(x)
     
@@ -71,21 +69,14 @@ class Resnet34(AvgPoolFcClassifier,resnet.Resnet34Backbone):
 class Resnet50(AvgPoolFcClassifier,resnet.Resnet50Backbone):
     def __init__(self,num_classes: int=None,weights: Union[weightlib.ResNet50_Weights,dict]=None) -> None:
         # Initialize the network. This will initialize the classifier layers
-        super().__init__(num_classes,2048)
-        # If weights are not none, load them
-        if weights is not None:
-            self.prep_and_load_weights(num_classes,weights)
-    def forward(self,x: torch.Tensor) -> torch.Tensor:
+        super().__init__(num_classes,2048,weights)
         return super().forward(x)
     
 # 101 backbone
 class Resnet101(AvgPoolFcClassifier,resnet.Resnet101Backbone):
     def __init__(self,num_classes: int=None,weights: Union[weightlib.ResNet101_Weights,dict]=None) -> None:
         # Initialize the network. This will initialize the classifier layers
-        super().__init__(num_classes,2048)
-        # If weights are not none, load them
-        if weights is not None:
-            self.prep_and_load_weights(num_classes,weights)
+        super().__init__(num_classes,2048,weights)
     def forward(self,x: torch.Tensor) -> torch.Tensor:
         return super().forward(x)
     
@@ -93,9 +84,6 @@ class Resnet101(AvgPoolFcClassifier,resnet.Resnet101Backbone):
 class Resnet152(AvgPoolFcClassifier,resnet.Resnet152Backbone):
     def __init__(self,num_classes: int=None,weights: Union[weightlib.ResNet152_Weights,dict]=None) -> None:
         # Initialize the network. This will initialize the classifier layers
-        super().__init__(num_classes,2048)
-        # If weights are not none, load them
-        if weights is not None:
-            self.prep_and_load_weights(num_classes,weights)
+        super().__init__(num_classes,2048,weights)
     def forward(self,x: torch.Tensor) -> torch.Tensor:
         return super().forward(x)
